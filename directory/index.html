@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GolfHoles | Directory</title>
+  <style>
+    :root {
+      --bg: #f5f1ec;
+      --card: #ffffff;
+      --line: rgba(0, 0, 0, 0.08);
+      --text: #3d3d3d;
+      --muted: #7a7a7a;
+      --accent: #7a9b7e;
+      --accent-2: #9c8b6f;
+      --radius: 14px;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(140deg, rgba(176, 196, 210, 0.3), rgba(160, 180, 195, 0.3));
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .page { max-width: 1200px; margin: 0 auto; }
+    header {
+      background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)), url('../Photos/golfhole.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
+      min-height: 200px;
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; color: #ffffff; margin: 0 0 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    h1 { margin: 0 0 8px; font-size: 32px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    .lede { margin: 0; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+
+    nav {
+      margin: 16px 0 0;
+      display: inline-flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      padding: 6px;
+      border-radius: 12px;
+    }
+    nav a {
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: background 120ms ease, color 120ms ease;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    }
+    nav a:hover { color: #ffffff; background: rgba(122, 155, 126, 0.4); }
+
+    main { margin-top: 18px; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #d4e4f0;
+      padding: 20px;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+    }
+    .panel h2 { margin: 0 0 16px; text-align: center; }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .filter-group select {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 14px;
+      min-width: 150px;
+      cursor: pointer;
+    }
+    
+    .filter-group select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .directory-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #f5f1ec;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .directory-table thead {
+      background: #8aaa8e;
+      color: #000000;
+    }
+    
+    .directory-table th {
+      padding: 12px 10px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 14px;
+      border-bottom: 2px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: #8aaa8e;
+      z-index: 10;
+      text-align: center;
+    }
+    
+    .directory-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      color: #000000;
+      text-align: center;
+      background: #f5f1ec;
+    }
+
+    /* Keep phone numbers on one line */
+    .directory-table th:nth-child(4),
+    .directory-table td:nth-child(4) {
+      min-width: 150px;
+      white-space: nowrap;
+    }
+    
+    .directory-table tbody tr:hover {
+      background: rgba(122, 155, 126, 0.08);
+    }
+    
+    .directory-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .directory-table a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .directory-table a:hover {
+      text-decoration: underline;
+    }
+    
+    .directory-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+    
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 30px;
+      border: 1px solid #888;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-close {
+      color: #aaa;
+      float: right;
+      font-size: 32px;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+    }
+
+    .modal-close:hover,
+    .modal-close:focus {
+      color: #000;
+    }
+
+    .profile-btn {
+      background: linear-gradient(135deg, #c9914d, #b8803e);
+      color: #ffffff;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 18px rgba(201, 145, 77, 0.28);
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    }
+
+    .profile-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 20px rgba(201, 145, 77, 0.34);
+      opacity: 0.96;
+    }
+
+    .profile-section {
+      margin-bottom: 20px;
+    }
+
+    .profile-section h3 {
+      color: #8aaa8e;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #8aaa8e;
+      padding-bottom: 5px;
+    }
+
+    .profile-info {
+      line-height: 1.8;
+    }
+
+    .profile-info strong {
+      color: #333;
+    }
+
+    .profile-photos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .profile-photos img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .profile-photos img:hover {
+      transform: scale(1.05);
+    }
+
+    .lightbox {
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .lightbox-content {
+      position: relative;
+      width: 90%;
+      height: 80%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .lightbox-filename {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: white;
+      font-size: 48px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 2001;
+      line-height: 1;
+    }
+
+    .lightbox-close:hover {
+      color: #ccc;
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      font-size: 48px;
+      padding: 20px 15px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      z-index: 2001;
+    }
+
+    .lightbox-nav:hover {
+      background-color: rgba(255,255,255,0.4);
+    }
+
+    .lightbox-prev {
+      left: 20px;
+    }
+
+    .lightbox-next {
+      right: 20px;
+    }
+
+    .lightbox-counter {
+      color: white;
+      font-size: 18px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .page {
+        padding: 15px;
+      }
+
+      header h1 {
+        font-size: 28px;
+      }
+
+      header .lede {
+        font-size: 14px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      nav a {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .filters {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .filter-group {
+        width: 100%;
+      }
+
+      .filter-group label {
+        font-size: 14px;
+      }
+
+      .filter-group select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .directory-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .directory-table {
+        min-width: 800px;
+        font-size: 14px;
+      }
+
+      .directory-table th,
+      .directory-table td {
+        padding: 8px;
+      }
+
+      .directory-thumbnail {
+        width: 50px;
+        height: 50px;
+      }
+
+      .profile-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+
+      .modal-content {
+        width: 95%;
+        margin: 10px auto;
+        padding: 20px;
+        max-height: 90vh;
+      }
+
+      .modal-close {
+        font-size: 28px;
+        top: 5px;
+        right: 10px;
+      }
+
+      .profile-section h3 {
+        font-size: 18px;
+      }
+
+      .profile-info {
+        font-size: 14px;
+      }
+
+      .profile-photos {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+      }
+
+      .profile-photos img {
+        height: 150px;
+      }
+
+      .lightbox-close {
+        top: 10px;
+        right: 15px;
+        font-size: 36px;
+      }
+
+      .lightbox-nav {
+        font-size: 32px;
+        padding: 15px 10px;
+      }
+
+      .lightbox-prev {
+        left: 10px;
+      }
+
+      .lightbox-next {
+        right: 10px;
+      }
+
+      .lightbox-counter {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page {
+        padding: 10px;
+      }
+
+      header h1 {
+        font-size: 24px;
+      }
+
+      nav a {
+        font-size: 13px;
+        padding: 6px 10px;
+      }
+
+      .directory-table {
+        font-size: 12px;
+      }
+
+      .directory-thumbnail {
+        width: 40px;
+        height: 40px;
+      }
+
+      .modal-content {
+        padding: 15px;
+      }
+
+      .profile-photos {
+        grid-template-columns: 1fr;
+      }
+
+      .lightbox-nav {
+        font-size: 28px;
+        padding: 10px 8px;
+      }
+    }
+    
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">GolfHoles</p>
+      <h1>Golf Course Directory</h1>
+      <p class="lede">Browse all golf courses in our network.</p>
+      <nav aria-label="Primary">
+        <a href="../">Home</a>
+        <a href="../map/">Map</a>
+        <a href="../coupons/">Coupons</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="directory-heading">
+        <div class="filters">
+          <div class="filter-group">
+            <label for="filter-state">State</label>
+            <select id="filter-state">
+              <option value="">All States</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-region">Region</label>
+            <select id="filter-region">
+              <option value="">All Regions</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-coupon">Coupon</label>
+            <select id="filter-coupon">
+              <option value="">All</option>
+              <option value="yes">Has Coupon</option>
+              <option value="no">No Coupon</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-photos">Photos</label>
+            <select id="filter-photos">
+              <option value="">All</option>
+              <option value="yes">Has Photos</option>
+              <option value="no">No Photos</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table id="directory-table" class="directory-table">
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>Region</th>
+                <th>Course Name</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Website</th>
+                <th>Profile</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="empty">Loading courses…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- Photo Lightbox -->
+    <div id="photoLightbox" class="lightbox" style="display: none;">
+      <span class="lightbox-close">&times;</span>
+      <div class="lightbox-content">
+        <button class="lightbox-nav lightbox-prev">&lsaquo;</button>
+        <div class="lightbox-filename"></div>
+        <img id="lightboxImage" src="" alt="">
+        <button class="lightbox-nav lightbox-next">&rsaquo;</button>
+      </div>
+      <div class="lightbox-counter"></div>
+    </div>
+  </div>
+
+  <script>
+    (async () => {
+      const tbody = document.querySelector("#directory-table tbody");
+      const stateFilter = document.getElementById("filter-state");
+      const regionFilter = document.getElementById("filter-region");
+      const couponFilter = document.getElementById("filter-coupon");
+      const photosFilter = document.getElementById("filter-photos");
+      
+      let allCourses = [];
+      
+      try {
+        const res = await fetch("../updated_course_listings.json");
+        const data = await res.json();
+        
+        allCourses = data.map(item => ({
+          index: item.course_index,
+          name: item.name || "Untitled course",
+          state: item.course_state || "",
+          region: item.course_region || "",
+          phone: item.phone || null,
+          address: item.address || null,
+          website: item.website || null,
+          summary: item.course_summary || null,
+          hours: item.hours || null,
+          photos: item.new_course_photos && Array.isArray(item.new_course_photos) ? item.new_course_photos : [],
+          hasCoupon: !!(item.course_coupon && String(item.course_coupon).trim()),
+          hasPhotos: !!(item.new_course_photos && Array.isArray(item.new_course_photos) && item.new_course_photos.length > 0),
+          thumbnail: item.course_index ? `../Thumbnails/${item.course_index}_${item.name.replace(/[^a-zA-Z0-9]/g, '_')}_thumbnail.jpg` : null
+        }));
+
+        // Update filter options based on current selection
+        function updateFilterOptions() {
+          const selectedState = stateFilter.value;
+          const selectedRegion = regionFilter.value;
+          const selectedCoupon = couponFilter.value;
+          const selectedPhotos = photosFilter.value;
+          
+          // Get filtered courses based on current selections (excluding the filter being updated)
+          let filtered = allCourses;
+          
+          // Filter for state dropdown (based on region, coupon, photos)
+          let statesFiltered = filtered;
+          if (selectedRegion) statesFiltered = statesFiltered.filter(c => c.region === selectedRegion);
+          if (selectedCoupon === "yes") statesFiltered = statesFiltered.filter(c => c.hasCoupon);
+          if (selectedCoupon === "no") statesFiltered = statesFiltered.filter(c => !c.hasCoupon);
+          if (selectedPhotos === "yes") statesFiltered = statesFiltered.filter(c => c.hasPhotos);
+          if (selectedPhotos === "no") statesFiltered = statesFiltered.filter(c => !c.hasPhotos);
+          
+          const availableStates = [...new Set(statesFiltered.map(c => c.state).filter(s => s))].sort();
+          const currentState = stateFilter.value;
+          stateFilter.innerHTML = '<option value="">All States</option>';
+          availableStates.forEach(state => {
+            const option = document.createElement("option");
+            option.value = state;
+            option.textContent = state;
+            stateFilter.appendChild(option);
+          });
+          if (availableStates.includes(currentState)) stateFilter.value = currentState;
+          
+          // Filter for region dropdown (based on state, coupon, photos)
+          let regionsFiltered = filtered;
+          if (selectedState) regionsFiltered = regionsFiltered.filter(c => c.state === selectedState);
+          if (selectedCoupon === "yes") regionsFiltered = regionsFiltered.filter(c => c.hasCoupon);
+          if (selectedCoupon === "no") regionsFiltered = regionsFiltered.filter(c => !c.hasCoupon);
+          if (selectedPhotos === "yes") regionsFiltered = regionsFiltered.filter(c => c.hasPhotos);
+          if (selectedPhotos === "no") regionsFiltered = regionsFiltered.filter(c => !c.hasPhotos);
+          
+          const availableRegions = [...new Set(regionsFiltered.map(c => c.region).filter(r => r))].sort();
+          const currentRegion = regionFilter.value;
+          regionFilter.innerHTML = '<option value="">All Regions</option>';
+          availableRegions.forEach(region => {
+            const option = document.createElement("option");
+            option.value = region;
+            option.textContent = region;
+            regionFilter.appendChild(option);
+          });
+          if (availableRegions.includes(currentRegion)) regionFilter.value = currentRegion;
+        }
+
+        // Filter function
+        function filterCourses() {
+          updateFilterOptions();
+          
+          const selectedState = stateFilter.value;
+          const selectedRegion = regionFilter.value;
+          const selectedCoupon = couponFilter.value;
+          const selectedPhotos = photosFilter.value;
+          
+          const filtered = allCourses.filter(course => {
+            if (selectedState && course.state !== selectedState) return false;
+            if (selectedRegion && course.region !== selectedRegion) return false;
+            if (selectedCoupon === "yes" && !course.hasCoupon) return false;
+            if (selectedCoupon === "no" && course.hasCoupon) return false;
+            if (selectedPhotos === "yes" && !course.hasPhotos) return false;
+            if (selectedPhotos === "no" && course.hasPhotos) return false;
+            return true;
+          });
+          
+          renderCourses(filtered);
+        }
+
+        // Render function
+        function renderCourses(courses) {          currentFilteredCourses = courses;          tbody.innerHTML = "";
+          if (!courses.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">No courses match the filters.</td></tr>';
+            return;
+          }
+
+          courses.forEach(course => {
+            const row = document.createElement("tr");
+            
+            const websiteHTML = course.website 
+              ? `<a href="${course.website}" target="_blank" rel="noopener">Visit</a>` 
+              : '';
+            
+            const addressHTML = course.address 
+              ? course.address.replace(/,?\s*USA\s*$/i, '').trim()
+              : '';
+            
+            row.innerHTML = `
+              <td>${course.state}</td>
+              <td>${course.region}</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                  <strong>${course.name}</strong>
+                </div>
+              </td>
+              <td>${course.phone || ''}</td>
+              <td>${addressHTML}</td>
+              <td>${websiteHTML}</td>
+              <td><button class="profile-btn" data-course-index="${courses.indexOf(course)}">Profile</button></td>
+            `;
+            tbody.appendChild(row);
+          });
+        }
+
+        // Add filter event listeners
+        stateFilter.addEventListener("change", filterCourses);
+        regionFilter.addEventListener("change", filterCourses);
+        couponFilter.addEventListener("change", filterCourses);
+        photosFilter.addEventListener("change", filterCourses);
+
+        // Modal functionality
+        const modal = document.getElementById('profileModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalClose = document.querySelector('.modal-close');
+        let currentFilteredCourses = [];
+        let currentCoursePhotos = [];
+        let currentPhotoIndex = 0;
+
+        // Lightbox functionality
+        const lightbox = document.getElementById('photoLightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        const lightboxPrev = document.querySelector('.lightbox-prev');
+        const lightboxNext = document.querySelector('.lightbox-next');
+        const lightboxCounter = document.querySelector('.lightbox-counter');
+        const lightboxFilename = document.querySelector('.lightbox-filename');
+
+        function openLightbox(photos, index) {
+          currentCoursePhotos = photos;
+          currentPhotoIndex = index;
+          showLightboxImage();
+          lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+          lightbox.style.display = 'none';
+        }
+
+        function showLightboxImage() {
+          const photo = currentCoursePhotos[currentPhotoIndex];
+          const photoPath = photo.replace(/\\/g, '/');
+          lightboxImage.src = `../${photoPath}`;
+          lightboxFilename.textContent = formatPhotoName(photoPath);
+          lightboxCounter.textContent = `${currentPhotoIndex + 1} / ${currentCoursePhotos.length}`;
+        }
+
+        function formatPhotoName(path) {
+          const parts = path.split(/[\\/]/);
+          let name = parts[parts.length - 1] || '';
+          name = name.replace(/\.[^/.]+$/, ''); // remove extension
+          name = name.replace(/[_-]+/g, ' '); // underscores/dashes to space
+          name = name.replace(/([a-zA-Z])([0-9])/g, '$1 $2'); // space between letters and numbers
+          name = name.replace(/0+(\d)/g, '$1'); // trim leading zeros before numbers
+          name = name.trim().replace(/\s+/g, ' ');
+          if (!name) return '';
+          return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        function nextPhoto() {
+          currentPhotoIndex = (currentPhotoIndex + 1) % currentCoursePhotos.length;
+          showLightboxImage();
+        }
+
+        function prevPhoto() {
+          currentPhotoIndex = (currentPhotoIndex - 1 + currentCoursePhotos.length) % currentCoursePhotos.length;
+          showLightboxImage();
+        }
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxNext.addEventListener('click', nextPhoto);
+        lightboxPrev.addEventListener('click', prevPhoto);
+
+        lightbox.addEventListener('click', (e) => {
+          if (e.target === lightbox) {
+            closeLightbox();
+          }
+        });
+
+        // Keyboard navigation for lightbox
+        document.addEventListener('keydown', (e) => {
+          if (lightbox.style.display === 'flex') {
+            if (e.key === 'ArrowRight') nextPhoto();
+            if (e.key === 'ArrowLeft') prevPhoto();
+            if (e.key === 'Escape') closeLightbox();
+          }
+        });
+
+        modalClose.addEventListener('click', () => {
+          modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.style.display = 'none';
+          }
+        });
+
+        // Profile button click handler
+        tbody.addEventListener('click', (e) => {
+          if (e.target.classList.contains('profile-btn')) {
+            const courseIndex = parseInt(e.target.getAttribute('data-course-index'));
+            const course = currentFilteredCourses[courseIndex];
+            if (course) {
+              showProfile(course);
+            }
+          }
+        });
+
+        function showProfile(course) {
+          let html = `<h2>${course.name}</h2>`;
+
+          // Basic info section
+          html += '<div class="profile-section">';
+          html += '<h3>Basic Information</h3>';
+          html += '<div class="profile-info">';
+          if (course.state) html += `<div><strong>State:</strong> ${course.state}</div>`;
+          if (course.region) html += `<div><strong>Region:</strong> ${course.region}</div>`;
+          if (course.phone) html += `<div><strong>Phone:</strong> ${course.phone}</div>`;
+          if (course.address) html += `<div><strong>Address:</strong> ${course.address.replace(/,?\s*USA\s*$/i, '').trim()}</div>`;
+          if (course.website) html += `<div><strong>Website:</strong> <a href="${course.website}" target="_blank" rel="noopener">${course.website}</a></div>`;
+          html += '</div></div>';
+
+          // Summary section
+          if (course.summary) {
+            html += '<div class="profile-section">';
+            html += '<h3>Course Summary</h3>';
+            html += `<div class="profile-info">${course.summary}</div>`;
+            html += '</div>';
+          }
+
+          // Hours section
+          if (course.hours) {
+            html += '<div class="profile-section">';
+            html += '<h3>Hours</h3>';
+            const hoursFormatted = Array.isArray(course.hours) ? course.hours.join('<br>') : course.hours.replace(/\n/g, '<br>');
+            html += `<div class="profile-info">${hoursFormatted}</div>`;
+            html += '</div>';
+          }
+
+          // Photos section
+          if (course.photos && course.photos.length > 0) {
+            html += '<div class="profile-section">';
+            html += '<h3>Photos</h3>';
+            html += '<div class="profile-photos">';
+            course.photos.forEach((photo, index) => {
+              const photoPath = photo.replace(/\\/g, '/');
+              html += `<img src="../${photoPath}" alt="${course.name}" data-photo-index="${index}" onerror="this.style.display='none'">`;
+            });
+            html += '</div></div>';
+          }
+
+          modalBody.innerHTML = html;
+          
+          // Add click handlers to photos
+          const photoElements = modalBody.querySelectorAll('.profile-photos img');
+          photoElements.forEach(img => {
+            img.addEventListener('click', () => {
+              const photoIndex = parseInt(img.getAttribute('data-photo-index'));
+              openLightbox(course.photos, photoIndex);
+            });
+          });
+          
+          modal.style.display = 'block';
+        }
+
+        // Initial setup
+        updateFilterOptions();
+        renderCourses(allCourses);
+
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">Could not load course directory.</td></tr>';
+        console.error(err);
+      }
+    })();
+  </script>
+</body>
+</html>

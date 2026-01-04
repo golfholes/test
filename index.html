@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GolfHoles | Home</title>
+  <style>
+    :root {
+      --bg: #f5f1ec;
+      --card: #ffffff;
+      --line: rgba(0, 0, 0, 0.08);
+      --text: #3d3d3d;
+      --muted: #7a7a7a;
+      --accent: #7a9b7e;
+      --accent-2: #9c8b6f;
+      --radius: 14px;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(140deg, rgba(176, 196, 210, 0.3), rgba(160, 180, 195, 0.3));
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .page { max-width: 1080px; margin: 0 auto; }
+    header {
+      background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)), url('Photos/golfhole.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
+      min-height: 200px;
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; color: #ffffff; margin: 0 0 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    h1 { margin: 0 0 8px; font-size: 32px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    .lede { margin: 0; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+
+    nav {
+      margin: 16px 0 0;
+      display: inline-flex;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      padding: 6px;
+      border-radius: 12px;
+    }
+    nav a {
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: background 120ms ease, color 120ms ease;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    }
+    nav a:hover { color: #ffffff; background: rgba(122, 155, 126, 0.4); }
+
+    main { margin-top: 18px; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #cfdcc8; /* pale sage green */
+      padding: 20px;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+    }
+    .panel h2 { margin: 0 0 8px; }
+    .panel p { margin: 0 0 14px; color: var(--muted); }
+
+    .list { display: grid; gap: 12px; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: #8aaa8e;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title {
+      margin: 0;
+      font-size: 18px;
+      color: #000000;
+      text-align: center;
+      flex: 1;
+    }
+    .header-spacer {
+      width: 110px;
+      flex: 0 0 110px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.2fr 240px;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .card-column {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      color: #000000;
+      min-height: 100%;
+    }
+    .card-column h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #000000;
+    }
+    .card-column p {
+      margin: 4px 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #000000;
+    }
+    .card-photo {
+      width: 100%;
+      height: 100%;
+      min-height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      display: block;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .card-photo:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,0.18); }
+
+    /* Lightbox for featured photos */
+    .lightbox {
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .lightbox-content {
+      position: relative;
+      width: 90%;
+      height: 80%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 42px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 2001;
+      line-height: 1;
+    }
+    .lightbox-close:hover { color: #ccc; }
+    .lightbox-nav {
+      position: absolute;
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      font-size: 40px;
+      padding: 16px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      z-index: 2001;
+    }
+    .lightbox-nav:hover { background-color: rgba(255,255,255,0.35); }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-counter {
+      color: white;
+      font-size: 16px;
+      margin-top: 12px;
+      text-align: center;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #c9914d, #b8803e);
+      box-shadow: 0 12px 24px rgba(201, 145, 77, 0.3);
+      transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 26px rgba(201, 145, 77, 0.35); opacity: 0.96; }
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      color: var(--muted);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">GolfHoles</p>
+      <h1>Play smarter with 4-for-3 deals.</h1>
+      <p class="lede">Browse the golf course directory, view the map, or jump straight to live coupons.</p>
+      <nav aria-label="Primary">
+        <a href="directory/">Directory</a>
+        <a href="map/">Map</a>
+        <a href="coupons/">Coupons</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="panel" aria-labelledby="coupon-heading">
+        <h2 id="coupon-heading" style="text-align: center;">Featured Courses</h2>
+        <div id="coupon-list" class="list">
+          <div class="empty">Loading courses…</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+      <!-- Featured Photo Lightbox -->
+      <div id="photoLightbox" class="lightbox">
+        <span class="lightbox-close" aria-label="Close" role="button">&times;</span>
+        <div class="lightbox-content">
+          <button class="lightbox-nav lightbox-prev" aria-label="Previous image">&lsaquo;</button>
+          <img id="lightboxImage" src="" alt="Course photo">
+          <button class="lightbox-nav lightbox-next" aria-label="Next image">&rsaquo;</button>
+        </div>
+        <div class="lightbox-counter" aria-live="polite"></div>
+      </div>
+
+  <script>
+    (async () => {
+      const list = document.getElementById("coupon-list");
+      const lightbox = document.getElementById("photoLightbox");
+      const lightboxImage = document.getElementById("lightboxImage");
+      const lightboxClose = document.querySelector(".lightbox-close");
+      const lightboxPrev = document.querySelector(".lightbox-prev");
+      const lightboxNext = document.querySelector(".lightbox-next");
+      const lightboxCounter = document.querySelector(".lightbox-counter");
+      let currentPhotos = [];
+      let currentPhotoIndex = 0;
+      try {
+        const res = await fetch("updated_course_listings.json");
+        const data = await res.json();
+        const featured = data
+          .filter(item => 
+            item.course_directory && String(item.course_directory).trim() &&
+            item.course_coupon && String(item.course_coupon).trim() &&
+            item.new_course_photos && Array.isArray(item.new_course_photos) && item.new_course_photos.length > 0 &&
+            item.course_summary && String(item.course_summary).trim()
+          )
+          .map(item => ({
+            name: item.name || "Untitled course",
+            state: item.course_state || "",
+            region: item.course_region || "",
+            address: item.address || "",
+            hours: item.hours || "",
+            coupon: item.course_coupon,
+            summary: item.course_summary,
+            website: item.website || item.course_directory || "",
+            photo: item.new_course_photos && item.new_course_photos[0] ? item.new_course_photos[0].replace(/\\/g, '/') : null,
+            photos: item.new_course_photos && Array.isArray(item.new_course_photos)
+              ? item.new_course_photos.map(p => p.replace(/\\/g, '/'))
+              : []
+          }));
+
+        // Sort to put Crowders Mountain first
+        featured.sort((a, b) => {
+          if (a.name.toLowerCase().includes('crowders mountain')) return -1;
+          if (b.name.toLowerCase().includes('crowders mountain')) return 1;
+          return 0;
+        });
+
+        list.innerHTML = "";
+        if (!featured.length) {
+          list.innerHTML = '<div class="empty">No featured courses yet. Featured courses need a directory, coupon, photos, and description.</div>';
+          return;
+        }
+
+        console.log('Featured courses:', featured);
+        featured.forEach(course => {
+          const card = document.createElement("article");
+          card.className = "card";
+          const photoImg = course.photo ? `<img class="card-photo" src="${course.photo}" alt="${course.name}" onerror="this.style.display='none'">` : '';
+
+          card.innerHTML = `
+            <div class="card-header">
+              <a class="btn" href="${course.coupon}" target="_blank" rel="noopener">Open coupon</a>
+              <h3 class="card-title">${course.name}</h3>
+              <div class="header-spacer" aria-hidden="true"></div>
+            </div>
+            <div class="card-grid">
+              <div class="card-column">
+                <h4>Location</h4>
+                <p>${course.state}${course.region ? " • " + course.region : ""}</p>
+                <p>${course.address || ''}</p>
+                ${course.hours ? `<div style="margin-top: 12px;"><strong>Hours:</strong><br>${Array.isArray(course.hours) ? course.hours.join('<br>') : course.hours.replace(/\\n/g, '<br>')}</div>` : ''}
+                ${course.website ? `<p style="margin-top: 10px;"><a href="${course.website}" target="_blank" rel="noopener" style="font-weight:700; color:#0a4d2b;">Website</a></p>` : ''}
+              </div>
+              <div class="card-column">
+                <h4>Description</h4>
+                <p>${course.summary}</p>
+              </div>
+              <div class="card-column" style="padding: 0; overflow: hidden;">
+                <div style="padding: 8px 10px; font-size: 13px; font-weight: 700; color: #000000; text-align: center; background: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(0,0,0,0.08);">Click for photo tour</div>
+                ${photoImg || '<div style="height:100%; background: rgba(0,0,0,0.04);"></div>'}
+              </div>
+            </div>
+          `;
+          list.appendChild(card);
+
+          // Photo click opens lightbox
+          const photoEl = card.querySelector('.card-photo');
+          if (photoEl && course.photos && course.photos.length) {
+            photoEl.addEventListener('click', () => {
+              openLightbox(course.photos, 0, course.name);
+            });
+          }
+        });
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Could not load listings.json. If opening this file directly, start a simple local server and refresh.</div>';
+        console.error(err);
+      }
+
+      function openLightbox(photos, index, courseName) {
+        if (!photos || !photos.length) return;
+        currentPhotos = photos;
+        currentPhotoIndex = index || 0;
+        lightbox.setAttribute('data-course', courseName || '');
+        showLightboxImage();
+        lightbox.style.display = 'flex';
+      }
+
+      function showLightboxImage() {
+        const photo = currentPhotos[currentPhotoIndex];
+        if (!photo) return;
+        const photoPath = photo.replace(/\\/g, '/');
+        lightboxImage.src = photoPath;
+        lightboxCounter.textContent = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+      }
+
+      function nextPhoto() {
+        currentPhotoIndex = (currentPhotoIndex + 1) % currentPhotos.length;
+        showLightboxImage();
+      }
+
+      function prevPhoto() {
+        currentPhotoIndex = (currentPhotoIndex - 1 + currentPhotos.length) % currentPhotos.length;
+        showLightboxImage();
+      }
+
+      function closeLightbox() {
+        lightbox.style.display = 'none';
+        lightboxImage.src = '';
+        currentPhotos = [];
+        currentPhotoIndex = 0;
+      }
+
+      lightboxClose.addEventListener('click', closeLightbox);
+      lightboxNext.addEventListener('click', nextPhoto);
+      lightboxPrev.addEventListener('click', prevPhoto);
+      lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+      document.addEventListener('keydown', (e) => {
+        if (lightbox.style.display === 'flex') {
+          if (e.key === 'ArrowRight') nextPhoto();
+          if (e.key === 'ArrowLeft') prevPhoto();
+          if (e.key === 'Escape') closeLightbox();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

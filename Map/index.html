@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golfholes | Map</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    :root {
+      --bg: #f5f1ec;
+      --panel: #ffffff;
+      --line: rgba(0, 0, 0, 0.08);
+      --text: #2f3b2f;
+      --accent: #6d8c6e;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)), url('../Photos/golfhole.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
+      min-height: 200px;
+      margin: 12px;
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; color: #ffffff; margin: 0 0 8px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    header h1 { margin: 0 0 8px; font-size: 32px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); }
+    .lede { margin: 0; color: #ffffff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-size: 16px; }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px 20px;
+      gap: 12px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    #map {
+      flex: 1;
+      min-height: 70vh;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.12);
+    }
+    /* Remove green tint on tiles */
+    .leaflet-tile {
+      filter: none;
+    }
+    /* Boundary styling */
+    .state-boundary {
+      color: #1d4d2b;
+      weight: 1.2;
+      opacity: 0.65;
+      fillOpacity: 0;
+    }
+    .county-boundary {
+      color: #2d703b;
+      weight: 0.6;
+      opacity: 0.4;
+      fillOpacity: 0;
+    }
+    /* Profile modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid var(--line);
+      width: min(900px, 92%);
+      border-radius: 12px;
+      box-shadow: 0 18px 36px rgba(0,0,0,0.18);
+    }
+    .modal-close {
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #555;
+    }
+    .profile-section { margin-top: 14px; }
+    .profile-section h3 { margin: 0 0 6px; font-size: 16px; color: #1f4027; }
+    .profile-info { background: #f6f9f5; padding: 10px; border-radius: 8px; border: 1px solid #d6e3d2; color: #2f3b2f; }
+    .profile-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+    .profile-photos img { width: 100%; border-radius: 8px; cursor: pointer; object-fit: cover; border: 1px solid #d6e3d2; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      padding: 0 12px 10px 12px;
+      margin-top: 6px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .filter-group label { font-size: 12px; font-weight: 700; color: #1f4027; }
+    .filter-group select {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #2f3b2f;
+      font-size: 14px;
+      cursor: pointer;
+      line-height: 1.3;
+    }
+    .filter-summary { font-size: 12px; color: #4c5a4c; padding: 0 12px 6px 12px; }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 9500;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox img { max-width: 90%; max-height: 80%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .lightbox-close, .lightbox-prev, .lightbox-next {
+      position: absolute;
+      color: #fff;
+      font-size: 28px;
+      background: rgba(0,0,0,0.4);
+      border: none;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .lightbox-close { top: 20px; right: 20px; }
+    .lightbox-prev { left: 24px; top: 50%; transform: translateY(-50%); }
+    .lightbox-next { right: 24px; top: 50%; transform: translateY(-50%); }
+    .lightbox-counter, .lightbox-filename {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .lightbox-filename { bottom: 46px; font-weight: 500; font-size: 14px; }
+    @media (max-width: 720px) {
+      header h1 { font-size: 20px; }
+      .panel { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Explore Courses</p>
+    <h1>Golfholes Course Map</h1>
+    <p class="lede">Browse every course, open profiles, and tour photos right from the map.</p>
+    <nav style="margin-top:14px; display:inline-flex; gap:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.3); padding:6px 10px; border-radius:12px;">
+      <a href="../index.html" style="color:#ffffff; text-decoration:none; font-weight:700; text-shadow:1px 1px 3px rgba(0,0,0,0.7); padding:8px 12px; border-radius:10px; background: rgba(0,0,0,0.18);">Home</a>
+      <a href="../directory/index.html" style="color:#ffffff; text-decoration:none; font-weight:700; text-shadow:1px 1px 3px rgba(0,0,0,0.7); padding:8px 12px; border-radius:10px; background: rgba(0,0,0,0.18);">Directory</a>
+    </nav>
+  </header>
+  <main>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="stateFilter">State</label>
+        <select id="stateFilter" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="regionFilter">Region</label>
+        <select id="regionFilter" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="couponFilter">Coupon</label>
+        <select id="couponFilter">
+          <option value="">All</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="photosFilter">Photos</label>
+        <select id="photosFilter">
+          <option value="">All</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="filter-group" style="align-self:flex-end;">
+        <button id="resetFilters" style="padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:#e5efe1; color:#1f4027; cursor:pointer; width:100%;">Reset Filters</button>
+      </div>
+    </div>
+    <div id="filterSummary" class="filter-summary"></div>
+    <div id="map"></div>
+  </main>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" aria-label="Close">&times;</span>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Lightbox for photos -->
+  <div id="photoLightbox" class="lightbox" role="dialog" aria-modal="true">
+    <button class="lightbox-close" aria-label="Close">&times;</button>
+    <button class="lightbox-prev" aria-label="Previous">&#8249;</button>
+    <img id="lightboxImage" src="" alt="Course photo" />
+    <button class="lightbox-next" aria-label="Next">&#8250;</button>
+    <div class="lightbox-filename"></div>
+    <div class="lightbox-counter"></div>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="">
+  </script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script>
+    const defaultCenter = [39.5, -98.35];
+    const defaultZoom = 4.2;
+
+    const map = L.map('map', {
+      zoomSnap: 0.25,
+      zoomDelta: 0.5,
+      worldCopyJump: true
+    }).setView(defaultCenter, defaultZoom);
+
+    const base = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      minZoom: 3,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let stateLayer = null;
+    let markerLayer = null;
+    let coursesData = [];
+    let stateFilter, regionFilter, couponFilter, photosFilter, resetFiltersBtn, filterSummary;
+
+    // Modal & lightbox refs
+    const modal = document.getElementById('profileModal');
+    const modalBody = document.getElementById('modalBody');
+    const modalClose = document.querySelector('.modal-close');
+    const lightbox = document.getElementById('photoLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    const lightboxPrev = document.querySelector('.lightbox-prev');
+    const lightboxNext = document.querySelector('.lightbox-next');
+    const lightboxCounter = document.querySelector('.lightbox-counter');
+    const lightboxFilename = document.querySelector('.lightbox-filename');
+    let currentCoursePhotos = [];
+    let currentPhotoIndex = 0;
+
+    const golfIcon = L.icon({
+      iconUrl:
+        'data:image/svg+xml,' +
+        encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg width="36" height="52" viewBox="0 0 36 52" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ballGradG" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#f8fbf7"/><stop offset="70%" stop-color="#eef3ec"/><stop offset="100%" stop-color="#d7e0d5"/></radialGradient><g id="dg" fill="#a9b7a9" fill-opacity="0.78" stroke="none"><circle r="1.05"/></g></defs><circle cx="18" cy="14" r="12" stroke="#9aa3a0" stroke-width="0.8" fill="url(#ballGradG)"/><path d="M15.5 27h5l-1 12.5-1.5 11.5-1.5-11.5-1-12.5Z" fill="#5f7f51" stroke="#4d6b3f" stroke-width="1.4" stroke-linejoin="round"/><g transform="translate(18 14)"><use href="#dg" transform="translate(0 -5.4)"/><use href="#dg" transform="translate(-3.2 -4.4)"/><use href="#dg" transform="translate(3.2 -4.4)"/><use href="#dg" transform="translate(-6.4 -3.4)"/><use href="#dg" transform="translate(0 -3.4)"/><use href="#dg" transform="translate(6.4 -3.4)"/><use href="#dg" transform="translate(-3.2 -2.2)"/><use href="#dg" transform="translate(3.2 -2.2)"/><use href="#dg" transform="translate(0 -1)"/><use href="#dg" transform="translate(-4.8 0.2)"/><use href="#dg" transform="translate(4.8 0.2)"/><use href="#dg" transform="translate(-1.6 1.2)"/><use href="#dg" transform="translate(1.6 1.2)"/><use href="#dg" transform="translate(-3.2 2.4)"/><use href="#dg" transform="translate(3.2 2.4)"/><use href="#dg" transform="translate(0 3.4)"/><use href="#dg" transform="translate(-1.6 4.6)"/><use href="#dg" transform="translate(1.6 4.6)"/></g></svg>`),
+      iconSize: [36, 52],
+      iconAnchor: [18, 48],
+      popupAnchor: [0, -46]
+    });
+
+    const golfIconBlue = L.icon({
+      iconUrl:
+        'data:image/svg+xml,' +
+        encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg width="36" height="52" viewBox="0 0 36 52" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ballGradB" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#f7fbff"/><stop offset="70%" stop-color="#e7eff9"/><stop offset="100%" stop-color="#cedbef"/></radialGradient><g id="db" fill="#a7b9d8" fill-opacity="0.8" stroke="none"><circle r="1.05"/></g></defs><circle cx="18" cy="14" r="12" stroke="#9aa3a0" stroke-width="0.8" fill="url(#ballGradB)"/><path d="M15.5 27h5l-1 12.5-1.5 11.5-1.5-11.5-1-12.5Z" fill="#1e88e5" stroke="#0d47a1" stroke-width="1.4" stroke-linejoin="round"/><g transform="translate(18 14)"><use href="#db" transform="translate(0 -5.4)"/><use href="#db" transform="translate(-3.2 -4.4)"/><use href="#db" transform="translate(3.2 -4.4)"/><use href="#db" transform="translate(-6.4 -3.4)"/><use href="#db" transform="translate(0 -3.4)"/><use href="#db" transform="translate(6.4 -3.4)"/><use href="#db" transform="translate(-3.2 -2.2)"/><use href="#db" transform="translate(3.2 -2.2)"/><use href="#db" transform="translate(0 -1)"/><use href="#db" transform="translate(-4.8 0.2)"/><use href="#db" transform="translate(4.8 0.2)"/><use href="#db" transform="translate(-1.6 1.2)"/><use href="#db" transform="translate(1.6 1.2)"/><use href="#db" transform="translate(-3.2 2.4)"/><use href="#db" transform="translate(3.2 2.4)"/><use href="#db" transform="translate(0 3.4)"/><use href="#db" transform="translate(-1.6 4.6)"/><use href="#db" transform="translate(1.6 4.6)"/></g></svg>`),
+      iconSize: [36, 52],
+      iconAnchor: [18, 48],
+      popupAnchor: [0, -46]
+    });
+
+    function toNumber(value) {
+      if (value === null || value === undefined) return NaN;
+      const n = typeof value === 'string' ? value.trim() : value;
+      return Number.parseFloat(n);
+    }
+
+    function formatPhotoName(path) {
+      const parts = path.split(/[\\/]/);
+      let name = parts[parts.length - 1] || '';
+      name = name.replace(/\.[^/.]+$/, '');
+      name = name.replace(/[_-]+/g, ' ');
+      name = name.replace(/([a-zA-Z])(\d)/g, '$1 $2');
+      name = name.replace(/0+(\d)/g, '$1');
+      name = name.trim().replace(/\s+/g, ' ');
+      if (!name) return '';
+      return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    function openLightbox(photos, index) {
+      currentCoursePhotos = photos;
+      currentPhotoIndex = index;
+      showLightboxImage();
+      lightbox.style.display = 'flex';
+    }
+
+    function closeLightbox() {
+      lightbox.style.display = 'none';
+    }
+
+    function showLightboxImage() {
+      const photo = currentCoursePhotos[currentPhotoIndex];
+      const photoPath = photo.replace(/\\/g, '/');
+      lightboxImage.src = `../${photoPath}`;
+      lightboxFilename.textContent = formatPhotoName(photoPath);
+      lightboxCounter.textContent = `${currentPhotoIndex + 1} / ${currentCoursePhotos.length}`;
+    }
+
+    function nextPhoto() {
+      currentPhotoIndex = (currentPhotoIndex + 1) % currentCoursePhotos.length;
+      showLightboxImage();
+    }
+
+    function prevPhoto() {
+      currentPhotoIndex = (currentPhotoIndex - 1 + currentCoursePhotos.length) % currentCoursePhotos.length;
+      showLightboxImage();
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxNext.addEventListener('click', nextPhoto);
+    lightboxPrev.addEventListener('click', prevPhoto);
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'ArrowRight') nextPhoto();
+        if (e.key === 'ArrowLeft') prevPhoto();
+        if (e.key === 'Escape') closeLightbox();
+      }
+      if (modal.style.display === 'block' && e.key === 'Escape') modal.style.display = 'none';
+    });
+    modalClose.addEventListener('click', () => { modal.style.display = 'none'; });
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+    function showProfile(course) {
+      let html = `<h2>${course.name || 'Course Profile'}</h2>`;
+
+      html += '<div class="profile-section">';
+      html += '<h3>Basic Information</h3>';
+      html += '<div class="profile-info">';
+      if (course.course_state) html += `<div><strong>State:</strong> ${course.course_state}</div>`;
+      if (course.course_region) html += `<div><strong>Region:</strong> ${course.course_region}</div>`;
+      if (course.phone) html += `<div><strong>Phone:</strong> ${course.phone}</div>`;
+      if (course.address) html += `<div><strong>Address:</strong> ${String(course.address).replace(/,?\s*USA\s*$/i, '').trim()}</div>`;
+      const website = course.website || course.course_directory;
+      if (website) html += `<div><strong>Website:</strong> <a href="${website}" target="_blank" rel="noopener">${website}</a></div>`;
+      html += '</div></div>';
+
+      if (course.course_summary) {
+        html += '<div class="profile-section">';
+        html += '<h3>Course Summary</h3>';
+        html += `<div class="profile-info">${course.course_summary}</div>`;
+        html += '</div>';
+      }
+
+      if (course.hours) {
+        html += '<div class="profile-section">';
+        html += '<h3>Hours</h3>';
+        const hoursFormatted = Array.isArray(course.hours) ? course.hours.join('<br>') : String(course.hours).replace(/\n/g, '<br>');
+        html += `<div class="profile-info">${hoursFormatted}</div>`;
+        html += '</div>';
+      }
+
+      if (course.new_course_photos && course.new_course_photos.length > 0) {
+        html += '<div class="profile-section">';
+        html += '<h3>Photos</h3>';
+        html += '<div class="profile-photos">';
+        course.new_course_photos.forEach((photo, index) => {
+          const photoPath = photo.replace(/\\/g, '/');
+          html += `<img src="../${photoPath}" alt="${course.name}" data-photo-index="${index}" onerror="this.style.display='none'">`;
+        });
+        html += '</div></div>';
+      }
+
+      modalBody.innerHTML = html;
+
+      const photoElements = modalBody.querySelectorAll('.profile-photos img');
+      photoElements.forEach(img => {
+        img.addEventListener('click', () => {
+          const photoIndex = parseInt(img.getAttribute('data-photo-index'));
+          openLightbox(course.new_course_photos, photoIndex);
+        });
+      });
+
+      modal.style.display = 'block';
+    }
+
+    function getSelected(select) {
+      return Array.from(select.selectedOptions).map(o => o.value).filter(Boolean);
+    }
+
+    function setOptions(select, values, selectedValues, placeholderText) {
+      const selectedSet = new Set(selectedValues || []);
+      select.innerHTML = '';
+      if (placeholderText) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = placeholderText;
+        opt.selected = selectedSet.size === 0;
+        select.appendChild(opt);
+      }
+      values.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        if (selectedSet.has(v)) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function attachToggleBehavior(select) {
+      select.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'OPTION') {
+          e.preventDefault();
+          const opt = e.target;
+          if (opt.value === '') {
+            Array.from(select.options).forEach(o => { o.selected = false; });
+            select.dispatchEvent(new Event('change'));
+            return;
+          }
+          opt.selected = !opt.selected;
+          const placeholder = select.querySelector('option[value=""]');
+          if (placeholder) placeholder.selected = false;
+          select.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+
+    function collapseDropdown(select) {
+      select.size = 1;
+      select.dataset.open = 'false';
+    }
+
+    function expandDropdown(select, maxRows = 6) {
+      const count = Math.min(select.options.length || 1, maxRows);
+      select.size = count;
+      select.dataset.open = 'true';
+    }
+
+    function enableDropdownMultiselect(select, maxRows = 6) {
+      collapseDropdown(select);
+      let blurTimeout;
+      const open = () => expandDropdown(select, maxRows);
+      const close = () => collapseDropdown(select);
+
+      select.addEventListener('focus', open);
+      select.addEventListener('mousedown', (e) => {
+        if (select.dataset.open !== 'true') {
+          e.preventDefault();
+          open();
+        }
+      });
+      select.addEventListener('blur', () => {
+        blurTimeout = setTimeout(close, 120);
+      });
+      select.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          close();
+          select.blur();
+        }
+      });
+      select.addEventListener('mouseenter', () => { if (blurTimeout) clearTimeout(blurTimeout); });
+      select.addEventListener('mouseleave', () => { blurTimeout = setTimeout(close, 120); });
+    }
+
+    function initFilters() {
+      stateFilter = document.getElementById('stateFilter');
+      regionFilter = document.getElementById('regionFilter');
+      couponFilter = document.getElementById('couponFilter');
+      photosFilter = document.getElementById('photosFilter');
+      resetFiltersBtn = document.getElementById('resetFilters');
+      filterSummary = document.getElementById('filterSummary');
+
+      stateFilter.addEventListener('change', handleFiltersChanged);
+      regionFilter.addEventListener('change', handleFiltersChanged);
+      couponFilter.addEventListener('change', handleFiltersChanged);
+      photosFilter.addEventListener('change', handleFiltersChanged);
+
+      attachToggleBehavior(stateFilter);
+      attachToggleBehavior(regionFilter);
+
+      enableDropdownMultiselect(stateFilter);
+      enableDropdownMultiselect(regionFilter);
+
+      resetFiltersBtn.addEventListener('click', () => {
+        stateFilter.selectedIndex = -1;
+        regionFilter.selectedIndex = -1;
+        couponFilter.value = '';
+        photosFilter.value = '';
+        handleFiltersChanged();
+      });
+    }
+
+    function updateFilterOptions() {
+      const selectedStates = getSelected(stateFilter);
+      const selectedRegions = getSelected(regionFilter);
+      const selectedCoupon = couponFilter.value;
+      const selectedPhotos = photosFilter.value;
+
+      let forStates = coursesData;
+      if (selectedRegions.length) forStates = forStates.filter(c => selectedRegions.includes(c.course_region));
+      if (selectedCoupon === 'yes') forStates = forStates.filter(c => c.course_coupon && String(c.course_coupon).trim());
+      if (selectedCoupon === 'no') forStates = forStates.filter(c => !(c.course_coupon && String(c.course_coupon).trim()));
+      if (selectedPhotos === 'yes') forStates = forStates.filter(hasPhotos);
+      if (selectedPhotos === 'no') forStates = forStates.filter(c => !hasPhotos(c));
+      const availableStates = [...new Set(forStates.map(c => c.course_state).filter(Boolean))].sort();
+      const keptStates = selectedStates.filter(s => availableStates.includes(s));
+      setOptions(stateFilter, availableStates, keptStates, 'All');
+      collapseDropdown(stateFilter);
+
+      let forRegions = coursesData;
+      if (selectedStates.length) forRegions = forRegions.filter(c => selectedStates.includes(c.course_state));
+      if (selectedCoupon === 'yes') forRegions = forRegions.filter(c => c.course_coupon && String(c.course_coupon).trim());
+      if (selectedCoupon === 'no') forRegions = forRegions.filter(c => !(c.course_coupon && String(c.course_coupon).trim()));
+      if (selectedPhotos === 'yes') forRegions = forRegions.filter(hasPhotos);
+      if (selectedPhotos === 'no') forRegions = forRegions.filter(c => !hasPhotos(c));
+      const availableRegions = [...new Set(forRegions.map(c => c.course_region).filter(Boolean))].sort();
+      const keptRegions = selectedRegions.filter(r => availableRegions.includes(r));
+      setOptions(regionFilter, availableRegions, keptRegions, 'All');
+      collapseDropdown(regionFilter);
+
+      updateFilterSummary();
+    }
+
+    function hasPhotos(course) {
+      return Array.isArray(course.new_course_photos) && course.new_course_photos.some(p => p && String(p).trim());
+    }
+
+    function filteredCourses() {
+      const selectedStates = getSelected(stateFilter);
+      const selectedRegions = getSelected(regionFilter);
+      const selectedCoupon = couponFilter.value;
+      const selectedPhotos = photosFilter.value;
+      return coursesData.filter(c => {
+        if (selectedStates.length && !selectedStates.includes(c.course_state)) return false;
+        if (selectedRegions.length && !selectedRegions.includes(c.course_region)) return false;
+        if (selectedCoupon === 'yes' && !(c.course_coupon && String(c.course_coupon).trim())) return false;
+        if (selectedCoupon === 'no' && (c.course_coupon && String(c.course_coupon).trim())) return false;
+        if (selectedPhotos === 'yes' && !hasPhotos(c)) return false;
+        if (selectedPhotos === 'no' && hasPhotos(c)) return false;
+        return true;
+      });
+    }
+
+    function handleFiltersChanged() {
+      updateFilterOptions();
+      const filtered = filteredCourses();
+      renderMarkers(filtered);
+    }
+
+    function updateFilterSummary() {
+      if (!filterSummary) return;
+      const states = getSelected(stateFilter);
+      const regions = getSelected(regionFilter);
+      const coupon = couponFilter.value;
+      const photos = photosFilter.value;
+      const parts = [];
+      if (states.length) parts.push(`States: ${states.join(', ')}`);
+      if (regions.length) parts.push(`Regions: ${regions.join(', ')}`);
+      if (coupon === 'yes') parts.push('Coupon: Yes');
+      if (coupon === 'no') parts.push('Coupon: No');
+      if (photos === 'yes') parts.push('Photos: Yes');
+      if (photos === 'no') parts.push('Photos: No');
+      filterSummary.textContent = parts.length ? parts.join(' | ') : 'No filters applied';
+    }
+
+    function renderMarkers(courses) {
+      if (markerLayer) {
+        map.removeLayer(markerLayer);
+      }
+
+      const markers = courses
+        .map(course => {
+          const lat = toNumber(course.latitude);
+          const lon = toNumber(course.longitude);
+          if (Number.isNaN(lat) || Number.isNaN(lon)) return null;
+
+          const name = course.name || 'Unnamed course';
+          const website = course.website || course.course_directory || '';
+          const photosList = Array.isArray(course.new_course_photos)
+            ? course.new_course_photos.filter(p => p && String(p).trim())
+            : [];
+          const hasPhotosFlag = photosList.length > 0;
+          const idx = coursesData.indexOf(course);
+          const popup = `
+            <div style="min-width:200px;">
+              <strong>${name}</strong>
+              ${course.course_region ? `<div>${course.course_region}${course.course_state ? ', ' + course.course_state : ''}</div>` : (course.course_state ? `<div>${course.course_state}</div>` : '')}
+              ${website ? `<div style="margin-top:6px;"><a href="${website}" target="_blank" rel="noopener" style="color:#0a4d2b; font-weight:700;">Website</a></div>` : ''}
+              <div style="margin-top:8px;"><button class="map-profile-btn" data-course-idx="${idx}" style="padding:6px 10px; border:1px solid #1f4027; background:#e5efe1; color:#1f4027; border-radius:6px; cursor:pointer;">Profile</button></div>
+              ${hasPhotosFlag ? `<div style="margin-top:8px;"><button class="map-photos-btn" data-course-idx="${idx}" data-photo-idx="0" style="padding:6px 10px; border:1px solid #1f4027; background:#dff0df; color:#1f4027; border-radius:6px; cursor:pointer;">View photos</button></div>` : ''}
+            </div>`;
+
+          const marker = L.marker([lat, lon], { icon: hasPhotosFlag ? golfIconBlue : golfIcon }).bindPopup(popup);
+          marker.on('popupopen', (e) => {
+            const btn = e.popup._contentNode.querySelector('.map-profile-btn');
+            if (btn) {
+              btn.addEventListener('click', () => {
+                const courseIdx = parseInt(btn.getAttribute('data-course-idx'));
+                const c = coursesData[courseIdx];
+                if (c) showProfile(c);
+              });
+            }
+
+            const photoBtn = e.popup._contentNode.querySelector('.map-photos-btn');
+            if (photoBtn) {
+              photoBtn.addEventListener('click', () => {
+                const courseIdx = parseInt(photoBtn.getAttribute('data-course-idx'));
+                const c = coursesData[courseIdx];
+                if (c && Array.isArray(c.new_course_photos)) {
+                  const photos = c.new_course_photos.filter(p => p && String(p).trim());
+                  if (photos.length) {
+                    currentCoursePhotos = photos;
+                    currentPhotoIndex = 0;
+                    showLightboxImage();
+                    lightbox.style.display = 'flex';
+                  }
+                }
+              });
+            }
+          });
+
+          return marker;
+        })
+        .filter(Boolean);
+
+      markerLayer = L.layerGroup(markers).addTo(map);
+
+      if (markers.length) {
+        const bounds = L.latLngBounds(markers.map(m => m.getLatLng()));
+        map.fitBounds(bounds.pad(0.12), { animate: false });
+      } else {
+        map.setView(defaultCenter, defaultZoom);
+      }
+    }
+
+    async function loadCourseMarkers() {
+      try {
+        const resp = await fetch('../updated_course_listings.json');
+        const courses = await resp.json();
+        coursesData = courses;
+        initFilters();
+        updateFilterOptions();
+        renderMarkers(coursesData);
+      } catch (err) {
+        console.error('Failed to load course markers', err);
+      }
+    }
+
+    async function loadBoundaries() {
+      try {
+        const resp = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json');
+        const topo = await resp.json();
+        const statesGeo = topojson.feature(topo, topo.objects.states);
+        stateLayer = L.geoJSON(statesGeo, {
+          style: {
+            color: '#1d4d2b',
+            weight: 1.2,
+            opacity: 0.65,
+            fillColor: '#9acb7f',
+            fillOpacity: 0.35
+          }
+        }).addTo(map);
+      } catch (err) {
+        console.error('Failed to load boundaries', err);
+      }
+    }
+
+    loadBoundaries();
+    loadCourseMarkers();
+
+  </script>
+</body>
+</html>
