@@ -106,6 +106,11 @@
       outline-offset: 1px;
     }
 
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     .directory-table {
       width: 100%;
       border-collapse: collapse;
@@ -117,7 +122,6 @@
     .directory-cards {
       display: none;
       margin-top: 12px;
-      display: none;
       gap: 12px;
     }
 
@@ -410,9 +414,9 @@
       h1 { font-size: 28px; }
       nav { flex-wrap: wrap; gap: 8px; }
       nav a { padding: 9px 12px; font-size: 14px; }
-      .panel { padding: 16px; }
+      .panel { padding: 14px; }
       .filters { gap: 10px; }
-      .directory-table { min-width: 720px; }
+      .directory-table { min-width: 680px; }
       .directory-table th { position: static; }
     }
 
@@ -462,9 +466,14 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      .panel { padding: 12px 0; box-shadow: none; border: none; background: transparent; }
       .directory-table {
-        min-width: 680px;
-        font-size: 14px;
+        min-width: 620px;
+        font-size: 13px;
+      }
+      .directory-table th,
+      .directory-table td {
+        padding: 8px 6px;
       }
 
       .directory-table th,
@@ -538,8 +547,15 @@
 
     @media (max-width: 640px) {
       nav { width: 100%; }
-      .directory-table-wrapper { display: none; }
-      .directory-cards { display: grid; grid-template-columns: 1fr; }
+      .page { padding: 8px; }
+      .panel { padding: 10px 0; }
+      .table-wrapper { overflow-x: visible; margin: 0 -6px; }
+      .directory-table { min-width: 100%; font-size: 12px; }
+      .directory-table th,
+      .directory-table td { padding: 6px 4px; }
+      .directory-table th:nth-child(4),
+      .directory-table td:nth-child(4) { min-width: 110px; white-space: normal; }
+      .directory-cards { display: none; }
       .directory-table th { position: static; }
     }
 
@@ -561,6 +577,9 @@
         font-size: 12px;
       }
 
+      .table-wrapper { margin: 0 -8px; }
+      .directory-table th,
+      .directory-table td { padding: 6px 4px; font-size: 12px; }
       .directory-thumbnail {
         width: 40px;
         height: 40px;
@@ -635,7 +654,7 @@
             </select>
           </div>
         </div>
-        <div style="overflow-x: auto;">
+        <div class="table-wrapper">
           <table id="directory-table" class="directory-table">
             <thead>
               <tr>
