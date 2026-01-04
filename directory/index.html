@@ -113,6 +113,37 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
+    .directory-cards {
+      display: none;
+      margin-top: 12px;
+      display: none;
+      gap: 12px;
+    }
+
+    .directory-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #f5f1ec;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+      display: grid;
+      gap: 8px;
+    }
+
+    .directory-card h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #1f4027;
+    }
+
+    .directory-card .meta { color: var(--muted); font-size: 13px; }
+
+    .directory-card .meta span { margin-right: 8px; }
+
+    .directory-card .detail { font-size: 14px; color: #000000; }
+
+    .directory-card .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     
     .directory-table thead {
       background: #8aaa8e;
@@ -507,6 +538,8 @@
 
     @media (max-width: 640px) {
       nav { width: 100%; }
+      .directory-table-wrapper { display: none; }
+      .directory-cards { display: grid; grid-template-columns: 1fr; }
       .directory-table th { position: static; }
     }
 
@@ -622,6 +655,7 @@
             </tbody>
           </table>
         </div>
+        <div id="directory-cards" class="directory-cards" aria-live="polite"></div>
       </section>
     </main>
 
@@ -653,6 +687,7 @@
       const regionFilter = document.getElementById("filter-region");
       const couponFilter = document.getElementById("filter-coupon");
       const photosFilter = document.getElementById("filter-photos");
+      const cardsContainer = document.getElementById("directory-cards");
       
       let allCourses = [];
       
@@ -748,15 +783,18 @@
         }
 
         // Render function
-        function renderCourses(courses) {          currentFilteredCourses = courses;          tbody.innerHTML = "";
+        function renderCourses(courses) {
+          currentFilteredCourses = courses;
+          tbody.innerHTML = "";
+          cardsContainer.innerHTML = "";
+
           if (!courses.length) {
             tbody.innerHTML = '<tr><td colspan="7" class="empty">No courses match the filters.</td></tr>';
+            cardsContainer.innerHTML = '<div class="empty">No courses match the filters.</div>';
             return;
           }
 
-          courses.forEach(course => {
-            const row = document.createElement("tr");
-            
+          courses.forEach((course, idx) => {
             const websiteHTML = course.website 
               ? `<a href="${course.website}" target="_blank" rel="noopener">Visit</a>` 
               : '';
@@ -764,7 +802,8 @@
             const addressHTML = course.address 
               ? course.address.replace(/,?\s*USA\s*$/i, '').trim()
               : '';
-            
+
+            const row = document.createElement("tr");
             row.innerHTML = `
               <td>${course.state}</td>
               <td>${course.region}</td>
@@ -776,9 +815,23 @@
               <td>${course.phone || ''}</td>
               <td>${addressHTML}</td>
               <td>${websiteHTML}</td>
-              <td><button class="profile-btn" data-course-index="${courses.indexOf(course)}">Profile</button></td>
+              <td><button class="profile-btn" data-course-index="${idx}">Profile</button></td>
             `;
             tbody.appendChild(row);
+
+            const card = document.createElement("article");
+            card.className = "directory-card";
+            card.innerHTML = `
+              <h3>${course.name}</h3>
+              <div class="meta"><span>${course.state || ''}</span><span>${course.region || ''}</span></div>
+              <div class="detail">${course.phone || ''}</div>
+              <div class="detail">${addressHTML}</div>
+              <div class="detail">${websiteHTML || ''}</div>
+              <div class="actions">
+                <button class="profile-btn" data-course-index="${idx}">Profile</button>
+              </div>
+            `;
+            cardsContainer.appendChild(card);
           });
         }
 
@@ -875,8 +928,8 @@
           }
         });
 
-        // Profile button click handler
-        tbody.addEventListener('click', (e) => {
+        // Profile button click handler (table and cards)
+        const handleProfileClick = (e) => {
           if (e.target.classList.contains('profile-btn')) {
             const courseIndex = parseInt(e.target.getAttribute('data-course-index'));
             const course = currentFilteredCourses[courseIndex];
@@ -884,7 +937,10 @@
               showProfile(course);
             }
           }
-        });
+        };
+
+        tbody.addEventListener('click', handleProfileClick);
+        cardsContainer.addEventListener('click', handleProfileClick);
 
         function showProfile(course) {
           let html = `<h2>${course.name}</h2>`;
