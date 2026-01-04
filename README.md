@@ -1,2 +1,2 @@
-# .github.io
+# github.io
 site directory
